@@ -7,4 +7,4 @@ export default [
     ignores: ['scripts/'],
   },
   ...tanstackConfig,
-];
+]
