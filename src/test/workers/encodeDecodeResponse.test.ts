@@ -1,4 +1,4 @@
-import { expect, test, describe } from 'vitest'
+import { describe, expect, test } from 'vitest'
 import { encodeDecodeResponse } from '../../workers/decoder/encodeDecodeResponse'
 
 describe('encodeDecodeResponse', () => {
@@ -44,7 +44,7 @@ describe('encodeDecodeResponse', () => {
 
   test('correctly normalizes Error objects in failed responses', () => {
     const err = new Error('thrown error')
-    // @ts-ignore
+    // @ts-ignore - Error object does not have a code property
     err.code = 'E123'
     const input = { ok: false, error: err }
     const result = JSON.parse(encodeDecodeResponse(input))

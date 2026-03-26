@@ -1,5 +1,5 @@
+import { describe, expect, it } from "vitest";
 import { mapSdsToneToClass } from "@/components/primitives/mapSdsToneToClass";
-import { describe, it, expect } from "vitest";
 
 describe("mapSdsToneToClass", () => {
   // ✅ Happy paths

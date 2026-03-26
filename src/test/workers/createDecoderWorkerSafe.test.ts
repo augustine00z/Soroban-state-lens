@@ -1,4 +1,4 @@
-import { expect, test, describe, vi } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 import { createDecoderWorkerSafe } from '../../workers/createDecoderWorkerSafe'
 import * as originalFactory from '../../workers/createDecoderWorker'
 

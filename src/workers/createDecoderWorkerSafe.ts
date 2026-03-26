@@ -1,5 +1,5 @@
-import * as Comlink from 'comlink'
 import { createDecoderWorker } from './createDecoderWorker'
+import type * as Comlink from 'comlink'
 import type { DecoderWorkerApi } from '../types/decoder-worker'
 
 /**
