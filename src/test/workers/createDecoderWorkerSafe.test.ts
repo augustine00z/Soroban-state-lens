@@ -4,6 +4,14 @@ import * as originalFactory from '../../workers/createDecoderWorker'
 
 describe('createDecoderWorkerSafe', () => {
   test('returns a promise that resolves successfully on happy path', async () => {
+    // Mock the original factory as specified in Issue #102 since Worker is not available in node. 
+    const spy = vi.spyOn(originalFactory, 'createDecoderWorker').mockImplementation(() => {
+      // Return a simple object matching the required structure for the test
+      return {
+        ping: vi.fn(),
+      } as any
+    })
+
     // We expect it to resolve to a Comlink proxy which is defined
     const workerPromise = createDecoderWorkerSafe()
     await expect(workerPromise).resolves.toBeDefined()
@@ -11,6 +19,8 @@ describe('createDecoderWorkerSafe', () => {
     // Proxies in Comlink are objects with methods from the target API
     expect(worker).toBeTruthy()
     expect(typeof worker.ping).toBe('function')
+
+    spy.mockRestore()
   })
 
   test('returns a rejected promise with stable message on constructor failures', async () => {
