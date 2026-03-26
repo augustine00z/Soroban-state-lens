@@ -164,27 +164,20 @@ export default function NetworkSelector() {
   const handleCustomUrlChange = (url: string) => {
     setCustomRpcUrl(url)
 
-    if (url.trim() && !isValidUrl(url)) {
-      setValidationError('Please enter a valid URL (http:// or https://)')
-    } else {
+    const validation = validateRpcUrl(url)
+    if (validation.isValid) {
       setValidationError('')
-    }
-
-    // Update network config in real time so other parts of the app can react
-    setNetworkConfig({
-      networkId: 'custom',
-      rpcUrl: url,
-    })
-  }
-
-  const isValidUrl = (url: string) => {
-    try {
-      new URL(url)
-      return url.startsWith('http://') || url.startsWith('https://')
-    } catch {
-      return false
+      // Update network config in real time so other parts of the app can react
+      // ONLY if the URL is valid.
+      setNetworkConfig({
+        networkId: 'custom',
+        rpcUrl: url.trim(),
+      })
+    } else {
+      setValidationError(validation.error || 'Invalid URL')
     }
   }
+
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
