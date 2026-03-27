@@ -82,7 +82,14 @@ function ContractLookUpInput() {
           {isValidating && (
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#58a6ff]"></div>
           )}
-          <kbd className="inline-flex items-center border border-border-dark rounded px-2 text-xs font-mono text-text-muted">
+          <button
+            type="submit"
+            disabled={isValidating}
+            className="inline-flex items-center justify-center rounded-md px-2 py-1 text-sm font-medium text-white bg-[#58a6ff] hover:bg-[#79b8ff] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+          </button>
+          <kbd className="hidden md:inline-flex items-center border border-border-dark rounded px-2 text-xs font-mono text-text-muted">
             ⌘K
           </kbd>
         </div>

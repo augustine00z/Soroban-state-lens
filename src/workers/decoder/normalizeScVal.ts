@@ -94,6 +94,82 @@ function createUnsupportedFallback(
 }
 
 /**
+ * Attempts to convert a BigInt-like value (BigInt, Hyper/UnsignedHyper with
+ * toString, or numeric string) to a decimal string. Returns null on failure.
+ */
+function bigIntLikeToString(value: unknown): string | null {
+  if (typeof value === 'bigint') {
+    return value.toString()
+  }
+  if (
+    value !== null &&
+    value !== undefined &&
+    typeof value === 'object' &&
+    'toString' in value &&
+    typeof (value as any).toString === 'function'
+  ) {
+    const str = (value as any).toString()
+    if (typeof str === 'string' && /^-?\d+$/.test(str)) {
+      return str
+    }
+  }
+  if (typeof value === 'string' && /^-?\d+$/.test(value)) {
+    return value
+  }
+  return null
+}
+
+/**
+ * Converts a 128-bit value with hi/lo parts to a decimal string.
+ * For unsigned: (hi << 64) | lo
+ * For signed: hi is treated as a signed 64-bit integer.
+ * Returns null if the value cannot be parsed.
+ */
+function parts128ToString(value: unknown, signed: boolean): string | null {
+  if (value === null || value === undefined || typeof value !== 'object') {
+    return null
+  }
+
+  // Support both method-style (SDK objects) and property-style (plain objects)
+  const v = value as any
+  const hiRaw = typeof v.hi === 'function' ? v.hi() : v.hi
+  const loRaw = typeof v.lo === 'function' ? v.lo() : v.lo
+
+  const hiStr = bigIntLikeToString(hiRaw)
+  const loStr = bigIntLikeToString(loRaw)
+
+  if (hiStr === null || loStr === null) {
+    return null
+  }
+
+  const hi = BigInt(hiStr)
+  const lo = BigInt(loStr)
+
+  // lo is always treated as unsigned 64-bit
+  const uLo = lo < 0n ? lo + (1n << 64n) : lo
+
+  if (signed) {
+    // hi is signed 64-bit; combined = hi * 2^64 + uLo
+    const combined = hi * (1n << 64n) + uLo
+    const min = -(1n << 127n)
+    const max = (1n << 127n) - 1n
+    if (combined < min || combined > max) {
+      return null
+    }
+    return combined.toString()
+  } else {
+    // Both parts treated as unsigned
+    const uHi = hi < 0n ? hi + (1n << 64n) : hi
+    const combined = uHi * (1n << 64n) + uLo
+    const max = (1n << 128n) - 1n
+    if (combined < 0n || combined > max) {
+      return null
+    }
+    return combined.toString()
+  }
+}
+
+/**
  * Options for normalizeScVal recursion limits.
  */
 export interface NormalizeScValOptions {
@@ -187,6 +263,44 @@ export function normalizeScVal(
         }
       }
       return createUnsupportedFallback(ScValType.SCV_I32, scVal.value)
+
+    case ScValType.SCV_U64: {
+      const str = bigIntLikeToString(scVal.value)
+      if (str !== null) {
+        const n = BigInt(str)
+        if (n >= 0n && n <= 0xFFFFFFFFFFFFFFFFn) {
+          return { kind: 'primitive', primitive: 'u64', value: str }
+        }
+      }
+      return createUnsupportedFallback(ScValType.SCV_U64, scVal.value)
+    }
+
+    case ScValType.SCV_I64: {
+      const str = bigIntLikeToString(scVal.value)
+      if (str !== null) {
+        const n = BigInt(str)
+        if (n >= -0x8000000000000000n && n <= 0x7FFFFFFFFFFFFFFFn) {
+          return { kind: 'primitive', primitive: 'i64', value: str }
+        }
+      }
+      return createUnsupportedFallback(ScValType.SCV_I64, scVal.value)
+    }
+
+    case ScValType.SCV_U128: {
+      const str = parts128ToString(scVal.value, false)
+      if (str !== null) {
+        return { kind: 'primitive', primitive: 'u128', value: str }
+      }
+      return createUnsupportedFallback(ScValType.SCV_U128, scVal.value)
+    }
+
+    case ScValType.SCV_I128: {
+      const str = parts128ToString(scVal.value, true)
+      if (str !== null) {
+        return { kind: 'primitive', primitive: 'i128', value: str }
+      }
+      return createUnsupportedFallback(ScValType.SCV_I128, scVal.value)
+    }
 
     case ScValType.SCV_STRING:
       return {

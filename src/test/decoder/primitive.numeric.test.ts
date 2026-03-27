@@ -99,12 +99,7 @@ describe('normalizeScVal - Numeric Primitives', () => {
   describe('unsupported fallback behavior', () => {
     it('should return stable fallback for unsupported variants', () => {
       const unsupportedVariants = [
-        ScValType.SCV_U64,
-        ScValType.SCV_I64,
-        ScValType.SCV_U128,
-        ScValType.SCV_I128,
         ScValType.SCV_BYTES,
-        ScValType.SCV_MAP,
       ]
 
       unsupportedVariants.forEach((variant) => {
