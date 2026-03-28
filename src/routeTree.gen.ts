@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SdsDemoRouteImport } from './routes/sds-demo'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ContractsContractIdExplorerRouteImport } from './routes/contracts/$contractId/explorer'
 
 const SdsDemoRoute = SdsDemoRouteImport.update({
   id: '/sds-demo',
@@ -22,31 +23,41 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContractsContractIdExplorerRoute =
+  ContractsContractIdExplorerRouteImport.update({
+    id: '/contracts/$contractId/explorer',
+    path: '/contracts/$contractId/explorer',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/sds-demo': typeof SdsDemoRoute
+  '/contracts/$contractId/explorer': typeof ContractsContractIdExplorerRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/sds-demo': typeof SdsDemoRoute
+  '/contracts/$contractId/explorer': typeof ContractsContractIdExplorerRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/sds-demo': typeof SdsDemoRoute
+  '/contracts/$contractId/explorer': typeof ContractsContractIdExplorerRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/sds-demo'
+  fullPaths: '/' | '/sds-demo' | '/contracts/$contractId/explorer'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/sds-demo'
-  id: '__root__' | '/' | '/sds-demo'
+  to: '/' | '/sds-demo' | '/contracts/$contractId/explorer'
+  id: '__root__' | '/' | '/sds-demo' | '/contracts/$contractId/explorer'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SdsDemoRoute: typeof SdsDemoRoute
+  ContractsContractIdExplorerRoute: typeof ContractsContractIdExplorerRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +76,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/contracts/$contractId/explorer': {
+      id: '/contracts/$contractId/explorer'
+      path: '/contracts/$contractId/explorer'
+      fullPath: '/contracts/$contractId/explorer'
+      preLoaderRoute: typeof ContractsContractIdExplorerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SdsDemoRoute: SdsDemoRoute,
+  ContractsContractIdExplorerRoute: ContractsContractIdExplorerRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
