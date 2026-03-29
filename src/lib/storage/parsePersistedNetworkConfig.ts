@@ -40,7 +40,9 @@ function parseCustom(rpcUrl: unknown): NetworkConfig | null {
   }
 }
 
-function parseLegacyNetworkConfig(input: Record<string, unknown>): NetworkConfig | null {
+function parseLegacyNetworkConfig(
+  input: Record<string, unknown>,
+): NetworkConfig | null {
   const preset = parsePreset(input.networkId)
   if (preset !== null) {
     return preset
@@ -49,9 +51,7 @@ function parseLegacyNetworkConfig(input: Record<string, unknown>): NetworkConfig
   return parseCustom(input.rpcUrl)
 }
 
-export function parsePersistedNetworkConfig(
-  input: unknown,
-): NetworkConfig {
+export function parsePersistedNetworkConfig(input: unknown): NetworkConfig {
   if (!isObjectRecord(input)) {
     return { ...FALLBACK }
   }

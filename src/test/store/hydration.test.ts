@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useLensStore } from '../../store/lensStore'
-import { NETWORK_CONFIG_STORAGE_KEY, clearPersistedNetworkConfig } from '../../store/persistence'
+import {
+  NETWORK_CONFIG_STORAGE_KEY,
+  clearPersistedNetworkConfig,
+} from '../../store/persistence'
 import { DEFAULT_NETWORKS } from '../../store/types'
 
 // Simple localStorage mock
@@ -31,7 +34,7 @@ describe('LensStore Hydration', () => {
   beforeEach(() => {
     clearPersistedNetworkConfig()
     vi.clearAllMocks()
-    
+
     // We need to reset the store state manually since Zustand store is a singleton in tests
     useLensStore.setState({
       networkConfig: DEFAULT_NETWORKS.futurenet,
@@ -47,11 +50,14 @@ describe('LensStore Hydration', () => {
         networkConfig: {
           kind: 'preset',
           networkId: 'testnet',
-        }
+        },
       },
-      version: 0
+      version: 0,
     }
-    localStorage.setItem(NETWORK_CONFIG_STORAGE_KEY, JSON.stringify(persistedState))
+    localStorage.setItem(
+      NETWORK_CONFIG_STORAGE_KEY,
+      JSON.stringify(persistedState),
+    )
 
     // 2. Trigger hydration
     // Note: In Zustand v5, persist middleware hydrates automatically if storage is sync.
@@ -70,11 +76,14 @@ describe('LensStore Hydration', () => {
         networkConfig: {
           kind: 'custom',
           rpcUrl: 'https://custom-rpc.com/',
-        }
+        },
       },
-      version: 0
+      version: 0,
     }
-    localStorage.setItem(NETWORK_CONFIG_STORAGE_KEY, JSON.stringify(persistedState))
+    localStorage.setItem(
+      NETWORK_CONFIG_STORAGE_KEY,
+      JSON.stringify(persistedState),
+    )
 
     await useLensStore.persist.rehydrate()
 
@@ -89,7 +98,7 @@ describe('LensStore Hydration', () => {
 
   it('falls back to default network when storage is empty', async () => {
     // Storage is already cleared in beforeEach
-    
+
     await useLensStore.persist.rehydrate()
 
     const state = useLensStore.getState()
@@ -102,11 +111,14 @@ describe('LensStore Hydration', () => {
         networkConfig: {
           kind: 'preset',
           networkId: 'invalid',
-        }
+        },
       },
-      version: 0
+      version: 0,
     }
-    localStorage.setItem(NETWORK_CONFIG_STORAGE_KEY, JSON.stringify(invalidPersistedState))
+    localStorage.setItem(
+      NETWORK_CONFIG_STORAGE_KEY,
+      JSON.stringify(invalidPersistedState),
+    )
 
     await useLensStore.persist.rehydrate()
 
@@ -120,11 +132,14 @@ describe('LensStore Hydration', () => {
         networkConfig: {
           kind: 'mystery',
           someStrangeKey: 'intruder',
-        }
+        },
       },
-      version: 0
+      version: 0,
     }
-    localStorage.setItem(NETWORK_CONFIG_STORAGE_KEY, JSON.stringify(invalidPersistedState))
+    localStorage.setItem(
+      NETWORK_CONFIG_STORAGE_KEY,
+      JSON.stringify(invalidPersistedState),
+    )
 
     await useLensStore.persist.rehydrate()
 

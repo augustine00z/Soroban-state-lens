@@ -1,12 +1,12 @@
 import * as Comlink from 'comlink'
 import { xdr } from '@stellar/stellar-sdk'
 import { normalizeScAddress, normalizeScVal } from './decoder/normalizeScVal'
-import { normalizeNode, ScValType } from './decoder/normalizeNode'
+import { ScValType, normalizeNode } from './decoder/normalizeNode'
 import type {
-  DecoderWorkerApi,
-  DecoderWorkerError,
   DecodeScValRequest,
   DecodeScValResult,
+  DecoderWorkerApi,
+  DecoderWorkerError,
   NormalizeRequest,
   NormalizeResult,
   PingResponse,
@@ -82,9 +82,9 @@ export const decoderWorkerApi: DecoderWorkerApi = {
           switchName === ScValType.SCV_SYMBOL) &&
         typeof value !== 'string' &&
         value &&
-        typeof (value as any).toString === 'function'
+        typeof value.toString === 'function'
       ) {
-        value = (value as any).toString()
+        value = value.toString()
       }
 
       const plainScVal = {

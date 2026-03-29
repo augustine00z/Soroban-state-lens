@@ -26,14 +26,19 @@ describe('decodeScVal helper', () => {
 
   it('should throw error when worker returns DecoderWorkerError', async () => {
     // Arrange
-    const mockError: any = { code: 'DECODE_FAILED', message: 'Something went wrong' }
+    const mockError: any = {
+      code: 'DECODE_FAILED',
+      message: 'Something went wrong',
+    }
     const mockWorker = {
       decodeScVal: vi.fn().mockResolvedValue(mockError),
     }
     vi.mocked(createDecoderWorker).mockReturnValue(mockWorker as any)
 
     // Act & Assert
-    await expect(decodeScVal('encoded-xdr')).rejects.toThrow('Something went wrong')
+    await expect(decodeScVal('encoded-xdr')).rejects.toThrow(
+      'Something went wrong',
+    )
   })
 
   it('should throw unexpected error when worker communication fails', async () => {

@@ -38,7 +38,9 @@ describe('parsePersistedNetworkConfig', () => {
   })
 
   it('falls back safely on malformed payloads', () => {
-    expect(parsePersistedNetworkConfig(null)).toEqual(DEFAULT_NETWORKS.futurenet)
+    expect(parsePersistedNetworkConfig(null)).toEqual(
+      DEFAULT_NETWORKS.futurenet,
+    )
     expect(parsePersistedNetworkConfig('invalid')).toEqual(
       DEFAULT_NETWORKS.futurenet,
     )

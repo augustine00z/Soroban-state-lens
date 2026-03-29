@@ -4,13 +4,15 @@ import type { DecoderWorkerApi } from '../types/decoder-worker'
 
 /**
  * Safely creates a decoder worker by wrapping the original factory.
- * This wrapper catches synchronous constructor failures and normalizes them 
+ * This wrapper catches synchronous constructor failures and normalizes them
  * into a rejected promise with a stable error message.
  *
  * @returns A promise that resolves to the Comlink-wrapped decoder worker.
  * @throws {Error} if the worker factory fails during initialization.
  */
-export function createDecoderWorkerSafe(): Promise<Comlink.Remote<DecoderWorkerApi>> {
+export function createDecoderWorkerSafe(): Promise<
+  Comlink.Remote<DecoderWorkerApi>
+> {
   try {
     // Wrap createDecoderWorker and normalize thrown boot errors.
     return Promise.resolve(createDecoderWorker())
@@ -22,6 +24,8 @@ export function createDecoderWorkerSafe(): Promise<Comlink.Remote<DecoderWorkerA
         : typeof error === 'string'
           ? error
           : 'Unknown error'
-    return Promise.reject(new Error(`Failed to initialize decoder worker: ${message}`))
+    return Promise.reject(
+      new Error(`Failed to initialize decoder worker: ${message}`),
+    )
   }
 }

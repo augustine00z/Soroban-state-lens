@@ -198,7 +198,9 @@ describe('persistence', () => {
 
   describe('serializeNetworkConfigForStorage', () => {
     it('serializes presets using the compact stored shape', () => {
-      expect(serializeNetworkConfigForStorage(DEFAULT_NETWORKS.mainnet)).toEqual({
+      expect(
+        serializeNetworkConfigForStorage(DEFAULT_NETWORKS.mainnet),
+      ).toEqual({
         kind: 'preset',
         networkId: 'mainnet',
       })

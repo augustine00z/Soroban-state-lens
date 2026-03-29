@@ -4,7 +4,7 @@ import type { Node } from '../types/node'
 
 /**
  * A main-thread helper for decoding Soroban ScVal XDR.
- * This function abstracts the worker communication logic and provides a 
+ * This function abstracts the worker communication logic and provides a
  * simple, typed interface for UI components to decode XDR strings.
  *
  * @param xdrString - The base64-encoded ScVal XDR string to decode.

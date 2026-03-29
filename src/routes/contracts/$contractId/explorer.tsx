@@ -56,12 +56,17 @@ function ContractExplorer() {
         <Card>
           <div className="p-6 space-y-6">
             <div className="space-y-2">
-              <Heading size="sm" as="h3" className="text-text-muted uppercase tracking-widest text-[11px] font-bold">
+              <Heading
+                size="sm"
+                as="h3"
+                className="text-text-muted uppercase tracking-widest text-[11px] font-bold"
+              >
                 Contract Overview
               </Heading>
               <p className="text-text-secondary leading-relaxed">
-                This contract is currently being indexed. The explorer view will soon provide 
-                a detailed breakdown of ledger entries, events, and source code for this address.
+                This contract is currently being indexed. The explorer view will
+                soon provide a detailed breakdown of ledger entries, events, and
+                source code for this address.
               </p>
             </div>
 
@@ -70,17 +75,13 @@ function ContractExplorer() {
                 <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted">
                   Last Updated
                 </span>
-                <span className="text-white font-mono text-sm">
-                  Just now
-                </span>
+                <span className="text-white font-mono text-sm">Just now</span>
               </div>
               <div className="flex flex-col gap-1">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-text-muted">
                   Network
                 </span>
-                <span className="text-white font-mono text-sm">
-                  Testnet
-                </span>
+                <span className="text-white font-mono text-sm">Testnet</span>
               </div>
             </div>
           </div>
@@ -88,17 +89,33 @@ function ContractExplorer() {
 
         <Card>
           <div className="p-6 space-y-4">
-            <Heading size="sm" as="h3" className="text-text-muted uppercase tracking-widest text-[11px] font-bold">
+            <Heading
+              size="sm"
+              as="h3"
+              className="text-text-muted uppercase tracking-widest text-[11px] font-bold"
+            >
               Quick Actions
             </Heading>
             <div className="flex flex-col gap-2">
-              <Button variant="secondary" size="md" className="w-full justify-start text-sm">
+              <Button
+                variant="secondary"
+                size="md"
+                className="w-full justify-start text-sm"
+              >
                 View on Stellar.Expert
               </Button>
-              <Button variant="secondary" size="md" className="w-full justify-start text-sm">
+              <Button
+                variant="secondary"
+                size="md"
+                className="w-full justify-start text-sm"
+              >
                 Copy Contract ID
               </Button>
-              <Button variant="secondary" size="md" className="w-full justify-start text-sm">
+              <Button
+                variant="secondary"
+                size="md"
+                className="w-full justify-start text-sm"
+              >
                 Download WASM
               </Button>
             </div>
@@ -116,8 +133,8 @@ function ContractExplorer() {
             State Explorer Coming Soon
           </Heading>
           <p className="text-text-muted text-sm">
-            We're building a powerful way to visualize and interact with this contract's state 
-            directly from your browser. Stay tuned!
+            We're building a powerful way to visualize and interact with this
+            contract's state directly from your browser. Stay tuned!
           </p>
         </div>
       </div>
