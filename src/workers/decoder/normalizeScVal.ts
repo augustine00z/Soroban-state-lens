@@ -1,4 +1,5 @@
 import { Address, xdr } from '@stellar/stellar-sdk'
+import { VisitedTracker, createVisitedTracker } from './guards'
 import type {
   CycleMarker,
   NormalizedAddress,
@@ -8,7 +9,6 @@ import type {
   TruncatedMarker,
   UnsupportedFallback,
 } from '../../types/normalized'
-import { VisitedTracker, createVisitedTracker } from './guards'
 
 // Re-export guards for external use
 export { VisitedTracker, createVisitedTracker }
