@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
-import type { ScVal } from '../../workers/decoder/normalizeScVal'
 import { ScValType, normalizeScVal } from '../../workers/decoder/normalizeScVal'
+import type { ScVal } from '../../workers/decoder/normalizeScVal'
 
 describe('ScVal Bytes Normalization', () => {
   test('should normalize empty bytes', () => {
