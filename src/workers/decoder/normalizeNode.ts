@@ -1,3 +1,6 @@
+import { EMPTY_PATH, appendPath } from '../../types/node'
+import { VisitedTracker, createVisitedTracker } from './guards'
+
 import type {
   AddressNode,
   CycleNode,
@@ -12,8 +15,6 @@ import type {
   UnsupportedNode,
   VecNode,
 } from '../../types/node'
-import { EMPTY_PATH, appendPath } from '../../types/node'
-import { VisitedTracker, createVisitedTracker } from './guards'
 
 export { EMPTY_PATH, appendPath }
 export type { Node, Path, PathSegment, RawScVal }
