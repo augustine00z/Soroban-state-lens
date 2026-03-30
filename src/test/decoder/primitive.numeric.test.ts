@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { ScValType, normalizeScVal } from '../../workers/decoder/normalizeScVal'
 import type { ScVal } from '../../workers/decoder/normalizeScVal'
+import { ScValType, normalizeScVal } from '../../workers/decoder/normalizeScVal'
 // (NormalizedValue type import removed — unused in tests)
 
 describe('normalizeScVal - Numeric Primitives', () => {
@@ -98,7 +98,7 @@ describe('normalizeScVal - Numeric Primitives', () => {
 
   describe('unsupported fallback behavior', () => {
     it('should return stable fallback for unsupported variants', () => {
-      const unsupportedVariants = [ScValType.SCV_BYTES]
+      const unsupportedVariants: ScValType[] = [] // SCV_BYTES is now supported
 
       unsupportedVariants.forEach((variant) => {
         const scVal: ScVal = {

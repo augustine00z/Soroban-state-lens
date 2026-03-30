@@ -1,5 +1,5 @@
 import { Address, xdr } from '@stellar/stellar-sdk'
-import { VisitedTracker, createVisitedTracker } from './guards'
+import { bytesToHex, isUint8Array } from '../../lib/format/bytesToHex'
 import type {
   CycleMarker,
   NormalizedAddress,
@@ -9,6 +9,7 @@ import type {
   TruncatedMarker,
   UnsupportedFallback,
 } from '../../types/normalized'
+import { VisitedTracker, createVisitedTracker } from './guards'
 
 // Re-export guards for external use
 export { VisitedTracker, createVisitedTracker }
@@ -314,6 +315,13 @@ export function normalizeScVal(
         kind: 'primitive',
         primitive: 'symbol',
         value: typeof scVal.value === 'string' ? scVal.value : '',
+      }
+
+    case ScValType.SCV_BYTES:
+      return {
+        kind: 'primitive',
+        primitive: 'bytes',
+        value: isUint8Array(scVal.value) ? bytesToHex(scVal.value) : '0x',
       }
 
     case ScValType.SCV_ERROR: {
