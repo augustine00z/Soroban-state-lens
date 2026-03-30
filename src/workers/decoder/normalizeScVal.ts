@@ -6,7 +6,7 @@ import type {
   NormalizedError,
   NormalizedMapEntry,
   NormalizedUnsupported,
-  TruncatedMarker,
+  NormalizedTruncated,
   UnsupportedFallback,
 } from '../../types/normalized'
 
@@ -17,7 +17,7 @@ export { VisitedTracker, createVisitedTracker }
 export type {
   NormalizedError,
   NormalizedMapEntry,
-  TruncatedMarker,
+  NormalizedTruncated,
   UnsupportedFallback,
 }
 
@@ -74,6 +74,7 @@ export type NormalizedValue =
   | string
   | null
   | CycleMarker
+  | NormalizedTruncated
   | UnsupportedFallback
   | MapEntry
   | Array<NormalizedValue>
@@ -177,8 +178,8 @@ export interface NormalizeScValOptions {
   maxDepth?: number
 }
 
-function createTruncatedMarker(depth: number): TruncatedMarker {
-  return { __truncated: true, depth }
+function createTruncatedMarker(depth: number): NormalizedTruncated {
+  return { kind: 'truncated', depth }
 }
 
 /**
@@ -362,8 +363,8 @@ export function normalizeScVal(
       if (Array.isArray(scVal.value)) {
         return scVal.value.map(
           (entry: { key: ScVal; val: ScVal }): MapEntry => ({
-            key: normalizeScVal(entry.key, visited),
-            value: normalizeScVal(entry.val, visited),
+            key: normalizeScVal(entry.key, visited, options, depth + 1),
+            value: normalizeScVal(entry.val, visited, options, depth + 1),
           }),
         )
       }

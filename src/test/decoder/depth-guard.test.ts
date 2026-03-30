@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { ScValType, normalizeScVal } from '../../workers/decoder/normalizeScVal'
-import type { TruncatedMarker } from '../../types/normalized'
+import type { NormalizedTruncated } from '../../types/normalized'
 
-function isTruncatedMarker(value: unknown): value is TruncatedMarker {
+function isTruncatedNode(value: unknown): value is NormalizedTruncated {
   return (
     typeof value === 'object' &&
     value !== null &&
-    '__truncated' in value &&
-    (value as TruncatedMarker).__truncated
+    'kind' in value &&
+    (value as any).kind === 'truncated'
   )
 }
 
@@ -48,10 +48,10 @@ describe('Depth Guard - maxDepth', () => {
       const result: any = normalizeScVal(scVal, undefined, { maxDepth: 1 })
       expect(result.kind).toBe('vec')
       expect(result.items.length).toBe(2)
-      expect(isTruncatedMarker(result.items[0])).toBe(true)
-      expect(isTruncatedMarker(result.items[1])).toBe(true)
-      expect((result.items[0] as TruncatedMarker).depth).toBe(1)
-      expect((result.items[1] as TruncatedMarker).depth).toBe(1)
+      expect(isTruncatedNode(result.items[0])).toBe(true)
+      expect(isTruncatedNode(result.items[1])).toBe(true)
+      expect((result.items[0] as NormalizedTruncated).depth).toBe(1)
+      expect((result.items[1] as NormalizedTruncated).depth).toBe(1)
     })
   })
 
@@ -73,8 +73,8 @@ describe('Depth Guard - maxDepth', () => {
       expect(result.items[1].kind).toBe('vec')
       const inner = result.items[1].items as Array<unknown>
       expect(inner.length).toBe(1)
-      expect(isTruncatedMarker(inner[0])).toBe(true)
-      expect((inner[0] as TruncatedMarker).depth).toBe(2)
+      expect(isTruncatedNode(inner[0])).toBe(true)
+      expect((inner[0] as NormalizedTruncated).depth).toBe(2)
     })
 
     it('root is replaced with truncated when maxDepth is 0', () => {
@@ -83,8 +83,8 @@ describe('Depth Guard - maxDepth', () => {
         value: [{ switch: ScValType.SCV_I32, value: 1 }],
       }
       const result = normalizeScVal(scVal, undefined, { maxDepth: 0 })
-      expect(isTruncatedMarker(result)).toBe(true)
-      expect((result as TruncatedMarker).depth).toBe(0)
+      expect(isTruncatedNode(result)).toBe(true)
+      expect((result as NormalizedTruncated).depth).toBe(0)
     })
   })
 
@@ -107,8 +107,8 @@ describe('Depth Guard - maxDepth', () => {
       const result: any = normalizeScVal(scVal, undefined, { maxDepth: 1 })
       expect(result.kind).toBe('vec')
       expect(result.items.length).toBe(1)
-      expect(isTruncatedMarker(result.items[0])).toBe(true)
-      expect((result.items[0] as TruncatedMarker).depth).toBe(1)
+      expect(isTruncatedNode(result.items[0])).toBe(true)
+      expect((result.items[0] as NormalizedTruncated).depth).toBe(1)
     })
 
     it('deep nesting produces truncated at each level past maxDepth', () => {
@@ -134,8 +134,28 @@ describe('Depth Guard - maxDepth', () => {
       const result: any = normalizeScVal(scVal, undefined, { maxDepth: 2 })
       const level1 = result.items[0].items as Array<unknown>
       expect(level1.length).toBe(1)
-      expect(isTruncatedMarker(level1[0])).toBe(true)
-      expect((level1[0] as TruncatedMarker).depth).toBe(2)
+      expect(isTruncatedNode(level1[0])).toBe(true)
+      expect((level1[0] as NormalizedTruncated).depth).toBe(2)
+    })
+
+    it('truncates map values when maxDepth exceeded', () => {
+      const scVal = {
+        switch: ScValType.SCV_MAP,
+        value: [
+          {
+            key: { switch: ScValType.SCV_SYMBOL, value: 'keys' },
+            val: {
+              switch: ScValType.SCV_VEC,
+              value: [{ switch: ScValType.SCV_I32, value: 123 }],
+            },
+          },
+        ],
+      }
+      const result: any = normalizeScVal(scVal, undefined, { maxDepth: 1 })
+      expect(result.kind).toBe('map')
+      expect(result.entries[0].key).toBe('keys')
+      expect(isTruncatedNode(result.entries[0].value)).toBe(true)
+      expect((result.entries[0].value as NormalizedTruncated).depth).toBe(1)
     })
   })
 
@@ -185,10 +205,10 @@ describe('Depth Guard - maxDepth', () => {
         ],
       }
       const result: any = normalizeScVal(scVal, undefined, { maxDepth: 1 })
-      const marker = result.items[0] as TruncatedMarker
+      const marker = result.items[0] as NormalizedTruncated
       const json = JSON.stringify(marker)
       const parsed = JSON.parse(json)
-      expect(parsed.__truncated).toBe(true)
+      expect(parsed.kind).toBe('truncated')
       expect(parsed.depth).toBe(1)
     })
   })
