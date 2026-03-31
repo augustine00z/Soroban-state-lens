@@ -226,12 +226,20 @@ export function normalizeScVal(
     switchValue = scVal.switch
   } else if (typeof scVal.switch === 'function') {
     // XDR objects have switch() method that returns an enum
-    const switchEnum = scVal.switch()
-    if (switchEnum && typeof switchEnum === 'object' && 'name' in switchEnum) {
-      // Convert XDR enum name (e.g., "scvAddress") to enum value (e.g., "ScvAddress")
-      const xdrName = switchEnum.name
-      switchValue = xdrName.charAt(0).toUpperCase() + xdrName.slice(1)
-    } else {
+    try {
+      const switchEnum = (scVal.switch as () => any)()
+      if (
+        switchEnum &&
+        typeof switchEnum === 'object' &&
+        'name' in switchEnum
+      ) {
+        // Convert XDR enum name (e.g., "scvAddress") to enum value (e.g., "ScvAddress")
+        const xdrName = switchEnum.name
+        switchValue = xdrName.charAt(0).toUpperCase() + xdrName.slice(1)
+      } else {
+        return createUnsupportedFallback('Invalid', scVal)
+      }
+    } catch {
       return createUnsupportedFallback('Invalid', scVal)
     }
   } else {
