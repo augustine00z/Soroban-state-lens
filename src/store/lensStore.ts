@@ -20,6 +20,7 @@ import type {
   NetworkConfig,
   NetworkConfigSlice,
 } from './types'
+import { createContractSlice } from './contractSlice'
 
 export type { LedgerEntry, LedgerKey } from './types'
 
@@ -174,6 +175,8 @@ export const useLensStore = create<LensStore>()(
       ...createNetworkConfigSlice(set),
       ...createLedgerDataSlice(set),
       ...createExpandedNodesSlice(set),
+
+      ...createContractSlice(set),
     }),
     {
       name: NETWORK_CONFIG_STORAGE_KEY,
@@ -214,6 +217,7 @@ export const resetStore = () => {
     connectionStatus: ConnectionStatus.IDLE,
     ledgerData: {},
     expandedNodes: [],
+    activeContractId: null,
   })
 }
 
