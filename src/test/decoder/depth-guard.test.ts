@@ -154,12 +154,12 @@ describe('Depth Guard - maxDepth', () => {
         ],
       }
       const result: any = normalizeScVal(scVal, undefined, { maxDepth: 1 })
-      expect(Array.isArray(result)).toBe(true)
-      expect(result).toHaveLength(1)
-      expect(isTruncatedValue(result[0].key)).toBe(true)
-      expect(isTruncatedValue(result[0].value)).toBe(true)
-      expect((result[0].key as NormalizedTruncated).depth).toBe(1)
-      expect((result[0].value as NormalizedTruncated).depth).toBe(1)
+      expect(result.kind).toBe('map')
+      expect(result.entries).toHaveLength(1)
+      expect(isTruncatedValue(result.entries[0].key)).toBe(true)
+      expect(isTruncatedValue(result.entries[0].value)).toBe(true)
+      expect((result.entries[0].key as NormalizedTruncated).depth).toBe(1)
+      expect((result.entries[0].value as NormalizedTruncated).depth).toBe(1)
     })
   })
 
@@ -233,10 +233,11 @@ describe('Depth Guard - maxDepth', () => {
       }
       // Inner vec is at depth 1, its children at depth 2
       const result: any = normalizeScVal(scVal, undefined, { maxDepth: 2 })
-      expect(result[0].key.value).toBe('k1')
-      expect(result[0].value.kind).toBe('vec')
-      expect(isTruncatedValue(result[0].value.items[0])).toBe(true)
-      expect(result[0].value.items[0].depth).toBe(2)
+      expect(result.kind).toBe('map')
+      expect(result.entries[0].key.value).toBe('k1')
+      expect(result.entries[0].value.kind).toBe('vec')
+      expect(isTruncatedValue(result.entries[0].value.items[0])).toBe(true)
+      expect(result.entries[0].value.items[0].depth).toBe(2)
     })
   })
 
