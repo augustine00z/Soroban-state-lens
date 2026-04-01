@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { ScValType, normalizeScVal } from '../../workers/decoder/normalizeScVal'
-import type { MapEntry } from '../../workers/decoder/normalizeScVal'
+import type { NormalizedMap, NormalizedVec } from '../../types/normalized'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -17,31 +17,30 @@ function entry(key: unknown, val: unknown) {
 
 describe('normalizeScVal - Map Handling', () => {
   describe('Empty maps', () => {
-    it('normalizes an empty map to an empty array', () => {
+    it('normalizes an empty map to a normalized map with empty entries', () => {
       const result = normalizeScVal({ switch: ScValType.SCV_MAP, value: [] })
-      expect(result).toEqual([])
-      expect(Array.isArray(result)).toBe(true)
+      expect(result).toEqual({ kind: 'map', entries: [] })
     })
 
-    it('normalizes a map with undefined value to an empty array', () => {
+    it('normalizes a map with undefined value to a normalized map with empty entries', () => {
       const result = normalizeScVal({
         switch: ScValType.SCV_MAP,
         value: undefined,
       })
-      expect(result).toEqual([])
+      expect(result).toEqual({ kind: 'map', entries: [] })
     })
 
-    it('normalizes a map with null value to an empty array', () => {
+    it('normalizes a map with null value to a normalized map with empty entries', () => {
       const result = normalizeScVal({
         switch: ScValType.SCV_MAP,
         value: null,
       })
-      expect(result).toEqual([])
+      expect(result).toEqual({ kind: 'map', entries: [] })
     })
   })
 
-  describe('Output shape – always an entry array, never a plain object', () => {
-    it('returns an array (not a plain object) for a non-empty map', () => {
+  describe('Output shape – normalized map object with entries array', () => {
+    it('returns a normalized map object for a non-empty map', () => {
       const result = normalizeScVal({
         switch: ScValType.SCV_MAP,
         value: [
@@ -51,11 +50,12 @@ describe('normalizeScVal - Map Handling', () => {
           ),
         ],
       })
-      expect(Array.isArray(result)).toBe(true)
-      expect(typeof result === 'object' && Array.isArray(result)).toBe(true)
+      expect(result).toHaveProperty('kind', 'map')
+      expect(result).toHaveProperty('entries')
+      expect(Array.isArray(result.entries)).toBe(true)
     })
 
-    it('each element has exactly { key, value } shape', () => {
+    it('each entry has exactly { key, value } shape', () => {
       const result = normalizeScVal({
         switch: ScValType.SCV_MAP,
         value: [
@@ -64,13 +64,13 @@ describe('normalizeScVal - Map Handling', () => {
             { switch: ScValType.SCV_BOOL, value: true },
           ),
         ],
-      }) as Array<MapEntry>
+      }) as NormalizedMap
 
-      expect(result).toHaveLength(1)
-      expect(result[0]).toHaveProperty('key')
-      expect(result[0]).toHaveProperty('value')
+      expect(result.entries).toHaveLength(1)
+      expect(result.entries[0]).toHaveProperty('key')
+      expect(result.entries[0]).toHaveProperty('value')
       // No extra properties
-      expect(Object.keys(result[0]).sort()).toEqual(['key', 'value'])
+      expect(Object.keys(result.entries[0]).sort()).toEqual(['key', 'value'])
     })
   })
 
@@ -88,14 +88,14 @@ describe('normalizeScVal - Map Handling', () => {
             { switch: ScValType.SCV_U32, value: 30 },
           ),
         ],
-      }) as Array<MapEntry>
+      }) as NormalizedMap
 
-      expect(result).toHaveLength(2)
-      expect(result[0]).toEqual({
+      expect(result.entries).toHaveLength(2)
+      expect(result.entries[0]).toEqual({
         key: { kind: 'primitive', primitive: 'symbol', value: 'name' },
         value: { kind: 'primitive', primitive: 'string', value: 'alice' },
       })
-      expect(result[1]).toEqual({
+      expect(result.entries[1]).toEqual({
         key: { kind: 'primitive', primitive: 'symbol', value: 'age' },
         value: { kind: 'primitive', primitive: 'u32', value: 30 },
       })
@@ -114,13 +114,13 @@ describe('normalizeScVal - Map Handling', () => {
             { switch: ScValType.SCV_BOOL, value: true },
           ),
         ],
-      }) as Array<MapEntry>
+      }) as NormalizedMap
 
-      expect(result[0]).toEqual({
+      expect(result.entries[0]).toEqual({
         key: { kind: 'primitive', primitive: 'u32', value: 0 },
         value: { kind: 'primitive', primitive: 'bool', value: false },
       })
-      expect(result[1]).toEqual({
+      expect(result.entries[1]).toEqual({
         key: { kind: 'primitive', primitive: 'u32', value: 1 },
         value: { kind: 'primitive', primitive: 'bool', value: true },
       })
@@ -139,13 +139,13 @@ describe('normalizeScVal - Map Handling', () => {
             { switch: ScValType.SCV_STRING, value: 'max-i32' },
           ),
         ],
-      }) as Array<MapEntry>
+      }) as NormalizedMap
 
-      expect(result[0]).toEqual({
+      expect(result.entries[0]).toEqual({
         key: { kind: 'primitive', primitive: 'i32', value: -1 },
         value: { kind: 'primitive', primitive: 'string', value: 'minus-one' },
       })
-      expect(result[1]).toEqual({
+      expect(result.entries[1]).toEqual({
         key: { kind: 'primitive', primitive: 'i32', value: 2147483647 },
         value: { kind: 'primitive', primitive: 'string', value: 'max-i32' },
       })
@@ -164,13 +164,13 @@ describe('normalizeScVal - Map Handling', () => {
             { switch: ScValType.SCV_U32, value: 1 },
           ),
         ],
-      }) as Array<MapEntry>
+      }) as NormalizedMap
 
-      expect(result[0]).toEqual({
+      expect(result.entries[0]).toEqual({
         key: { kind: 'primitive', primitive: 'bool', value: false },
         value: { kind: 'primitive', primitive: 'u32', value: 0 },
       })
-      expect(result[1]).toEqual({
+      expect(result.entries[1]).toEqual({
         key: { kind: 'primitive', primitive: 'bool', value: true },
         value: { kind: 'primitive', primitive: 'u32', value: 1 },
       })
@@ -193,17 +193,17 @@ describe('normalizeScVal - Map Handling', () => {
             { switch: ScValType.SCV_STRING, value: 'tuple-key' },
           ),
         ],
-      }) as Array<MapEntry>
+      }) as NormalizedMap
 
-      expect(result).toHaveLength(1)
-      expect(result[0].key).toEqual({
+      expect(result.entries).toHaveLength(1)
+      expect(result.entries[0].key).toEqual({
         kind: 'vec',
         items: [
           { kind: 'primitive', primitive: 'u32', value: 1 },
           { kind: 'primitive', primitive: 'u32', value: 2 },
         ],
       })
-      expect(result[0].value).toEqual({
+      expect(result.entries[0].value).toEqual({
         kind: 'primitive',
         primitive: 'string',
         value: 'tuple-key',
@@ -227,16 +227,19 @@ describe('normalizeScVal - Map Handling', () => {
             { switch: ScValType.SCV_BOOL, value: true },
           ),
         ],
-      }) as Array<MapEntry>
+      }) as NormalizedMap
 
-      expect(result).toHaveLength(1)
-      expect(result[0].key).toEqual([
-        {
-          key: { kind: 'primitive', primitive: 'symbol', value: 'id' },
-          value: { kind: 'primitive', primitive: 'u32', value: 42 },
-        },
-      ])
-      expect(result[0].value).toEqual({
+      expect(result.entries).toHaveLength(1)
+      expect(result.entries[0].key).toEqual({
+        kind: 'map',
+        entries: [
+          {
+            key: { kind: 'primitive', primitive: 'symbol', value: 'id' },
+            value: { kind: 'primitive', primitive: 'u32', value: 42 },
+          },
+        ],
+      })
+      expect(result.entries[0].value).toEqual({
         kind: 'primitive',
         primitive: 'bool',
         value: true,
@@ -257,9 +260,9 @@ describe('normalizeScVal - Map Handling', () => {
       const result = normalizeScVal({
         switch: ScValType.SCV_MAP,
         value: mapValue,
-      }) as Array<MapEntry>
+      }) as NormalizedMap
 
-      const resultKeys = result.map((e: any) => e.key.value)
+      const resultKeys = result.entries.map((e: any) => e.key.value)
       expect(resultKeys).toEqual(keys)
     })
 
@@ -280,19 +283,19 @@ describe('normalizeScVal - Map Handling', () => {
             { switch: ScValType.SCV_VOID },
           ),
         ],
-      }) as Array<MapEntry>
+      }) as NormalizedMap
 
-      expect(result[0].key).toEqual({
+      expect(result.entries[0].key).toEqual({
         kind: 'primitive',
         primitive: 'u32',
         value: 10,
       })
-      expect(result[1].key).toEqual({
+      expect(result.entries[1].key).toEqual({
         kind: 'primitive',
         primitive: 'symbol',
         value: 'second',
       })
-      expect(result[2].key).toEqual({
+      expect(result.entries[2].key).toEqual({
         kind: 'primitive',
         primitive: 'bool',
         value: true,
@@ -318,18 +321,18 @@ describe('normalizeScVal - Map Handling', () => {
             },
           ),
         ],
-      }) as Array<MapEntry>
+      }) as NormalizedMap
 
-      expect(result).toHaveLength(1)
-      expect(result[0].key).toEqual({
+      expect(result.entries).toHaveLength(1)
+      expect(result.entries[0].key).toEqual({
         kind: 'primitive',
         primitive: 'symbol',
         value: 'outer',
       })
-      const inner = result[0].value as Array<MapEntry>
-      expect(Array.isArray(inner)).toBe(true)
-      expect(inner).toHaveLength(1)
-      expect(inner[0]).toEqual({
+      const inner = result.entries[0].value as NormalizedMap
+      expect(inner.kind).toBe('map')
+      expect(inner.entries).toHaveLength(1)
+      expect(inner.entries[0]).toEqual({
         key: { kind: 'primitive', primitive: 'symbol', value: 'inner' },
         value: { kind: 'primitive', primitive: 'u32', value: 99 },
       })
@@ -351,9 +354,9 @@ describe('normalizeScVal - Map Handling', () => {
             },
           ),
         ],
-      }) as Array<MapEntry>
+      }) as NormalizedMap
 
-      expect(result[0].value).toEqual({
+      expect(result.entries[0].value).toEqual({
         kind: 'vec',
         items: [
           { kind: 'primitive', primitive: 'u32', value: 1 },
@@ -388,11 +391,11 @@ describe('normalizeScVal - Map Handling', () => {
             },
           ),
         ],
-      }) as Array<MapEntry>
+      }) as NormalizedMap
 
-      const l2 = result[0].value as Array<MapEntry>
-      const l3 = l2[0].value as Array<MapEntry>
-      expect(l3[0]).toEqual({
+      const l2 = result.entries[0].value as NormalizedMap
+      const l3 = l2.entries[0].value as NormalizedMap
+      expect(l3.entries[0]).toEqual({
         key: { kind: 'primitive', primitive: 'symbol', value: 'l3' },
         value: { kind: 'primitive', primitive: 'u32', value: 7 },
       })
@@ -423,23 +426,28 @@ describe('normalizeScVal - Map Handling', () => {
             ],
           },
         ],
-      }) as Array<Array<MapEntry>>
+      }) as NormalizedVec
 
-      const r: any = result
-      expect(r.kind).toBe('vec')
-      expect(r.items).toHaveLength(2)
-      expect(r.items[0]).toEqual([
-        {
-          key: { kind: 'primitive', primitive: 'symbol', value: 'x' },
-          value: { kind: 'primitive', primitive: 'u32', value: 1 },
-        },
-      ])
-      expect(r.items[1]).toEqual([
-        {
-          key: { kind: 'primitive', primitive: 'symbol', value: 'y' },
-          value: { kind: 'primitive', primitive: 'u32', value: 2 },
-        },
-      ])
+      expect(result.kind).toBe('vec')
+      expect(result.items).toHaveLength(2)
+      expect(result.items[0]).toEqual({
+        kind: 'map',
+        entries: [
+          {
+            key: { kind: 'primitive', primitive: 'symbol', value: 'x' },
+            value: { kind: 'primitive', primitive: 'u32', value: 1 },
+          },
+        ],
+      })
+      expect(result.items[1]).toEqual({
+        kind: 'map',
+        entries: [
+          {
+            key: { kind: 'primitive', primitive: 'symbol', value: 'y' },
+            value: { kind: 'primitive', primitive: 'u32', value: 2 },
+          },
+        ],
+      })
     })
   })
 
@@ -453,9 +461,9 @@ describe('normalizeScVal - Map Handling', () => {
             { switch: ScValType.SCV_VOID },
           ),
         ],
-      }) as Array<MapEntry>
+      }) as NormalizedMap
 
-      expect(result[0]).toEqual({
+      expect(result.entries[0]).toEqual({
         key: { kind: 'primitive', primitive: 'symbol', value: 'empty' },
         value: { kind: 'primitive', primitive: 'void', value: null },
       })

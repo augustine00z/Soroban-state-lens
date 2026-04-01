@@ -5,8 +5,11 @@ import type {
   CycleMarker,
   NormalizedAddress,
   NormalizedError,
+  NormalizedMap,
   NormalizedMapEntry,
+  NormalizedPrimitive,
   NormalizedUnsupported,
+  NormalizedVec,
   TruncatedMarker,
   UnsupportedFallback,
 } from '../../types/normalized'
@@ -75,7 +78,12 @@ export type NormalizedValue =
   | string
   | null
   | CycleMarker
-  | UnsupportedFallback
+  | TruncatedMarker
+  | NormalizedError
+  | NormalizedUnsupported
+  | NormalizedPrimitive
+  | NormalizedVec
+  | NormalizedMap
   | MapEntry
   | Array<NormalizedValue>
   | { [key: string]: NormalizedValue }
@@ -395,20 +403,25 @@ export function normalizeScVal(
       }
 
     case ScValType.SCV_MAP:
-      // Map keys in Soroban can be complex objects, so we cannot coerce the
-      // map to a plain JS object.  Instead we return an ordered array of
-      // { key, value } entry pairs that preserve both key type and map order.
+      // Map keys in Soroban can be complex objects, so we preserve them as
+      // explicit key/value pairs in a normalized map structure.
       if (Array.isArray(scVal.value)) {
-        return scVal.value.map(
-          (entry: { key: ScVal; val: ScVal }): MapEntry => ({
-            key: normalizeScVal(entry.key, visited, options, depth + 1),
-            value: normalizeScVal(entry.val, visited, options, depth + 1),
-          }),
-        )
+        return {
+          kind: 'map',
+          entries: scVal.value.map(
+            (entry: { key: ScVal; val: ScVal }): NormalizedMapEntry => ({
+              key: normalizeScVal(entry.key, visited, options, depth + 1),
+              value: normalizeScVal(entry.val, visited, options, depth + 1),
+            }),
+          ),
+        }
       }
       // null/undefined value means an empty map
       if (scVal.value == null) {
-        return []
+        return {
+          kind: 'map',
+          entries: [],
+        }
       }
       return createUnsupportedFallback(ScValType.SCV_MAP, scVal.value)
 

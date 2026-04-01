@@ -211,10 +211,11 @@ describe('Depth Guard - maxDepth', () => {
       }
       // Inner vec is at depth 1, its children at depth 2
       const result: any = normalizeScVal(scVal, undefined, { maxDepth: 2 })
-      expect(result[0].key.value).toBe('k1')
-      expect(result[0].value.kind).toBe('vec')
-      expect(isTruncatedMarker(result[0].value.items[0])).toBe(true)
-      expect(result[0].value.items[0].depth).toBe(2)
+      expect(result.kind).toBe('map')
+      expect(result.entries[0].key.value).toBe('k1')
+      expect(result.entries[0].value.kind).toBe('vec')
+      expect(isTruncatedMarker(result.entries[0].value.items[0])).toBe(true)
+      expect(result.entries[0].value.items[0].depth).toBe(2)
     })
   })
 
