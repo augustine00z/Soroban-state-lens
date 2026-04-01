@@ -138,7 +138,7 @@ describe('Depth Guard - maxDepth', () => {
       expect((level1[0] as NormalizedTruncated).depth).toBe(2)
     })
 
-    it('truncates map values when maxDepth exceeded', () => {
+    it('truncates map entry nodes when maxDepth exceeded', () => {
       const scVal = {
         switch: ScValType.SCV_MAP,
         value: [
@@ -152,10 +152,12 @@ describe('Depth Guard - maxDepth', () => {
         ],
       }
       const result: any = normalizeScVal(scVal, undefined, { maxDepth: 1 })
-      expect(result.kind).toBe('map')
-      expect(result.entries[0].key).toBe('keys')
-      expect(isTruncatedNode(result.entries[0].value)).toBe(true)
-      expect((result.entries[0].value as NormalizedTruncated).depth).toBe(1)
+      expect(Array.isArray(result)).toBe(true)
+      expect(result).toHaveLength(1)
+      expect(isTruncatedNode(result[0].key)).toBe(true)
+      expect(isTruncatedNode(result[0].value)).toBe(true)
+      expect((result[0].key as NormalizedTruncated).depth).toBe(1)
+      expect((result[0].value as NormalizedTruncated).depth).toBe(1)
     })
   })
 
