@@ -216,11 +216,38 @@ export function normalizeScVal(
     visited.markVisited(scVal)
   }
 
-  if (!scVal || typeof scVal.switch !== 'string') {
+  // Handle null/undefined first
+  if (!scVal) {
     return createUnsupportedFallback('Invalid', scVal)
   }
 
-  switch (scVal.switch) {
+  // Handle XDR ScVal objects where switch is an enum
+  let switchValue: string
+  if (typeof scVal.switch === 'string') {
+    switchValue = scVal.switch
+  } else if (typeof scVal.switch === 'function') {
+    // XDR objects have switch() method that returns an enum
+    try {
+      const switchEnum = (scVal.switch as () => any)()
+      if (
+        switchEnum &&
+        typeof switchEnum === 'object' &&
+        'name' in switchEnum
+      ) {
+        // Convert XDR enum name (e.g., "scvAddress") to enum value (e.g., "ScvAddress")
+        const xdrName = switchEnum.name
+        switchValue = xdrName.charAt(0).toUpperCase() + xdrName.slice(1)
+      } else {
+        return createUnsupportedFallback('Invalid', scVal)
+      }
+    } catch {
+      return createUnsupportedFallback('Invalid', scVal)
+    }
+  } else {
+    return createUnsupportedFallback('Invalid', scVal)
+  }
+
+  switch (switchValue) {
     case ScValType.SCV_BOOL:
       return {
         kind: 'primitive',
@@ -380,6 +407,9 @@ export function normalizeScVal(
         return []
       }
       return createUnsupportedFallback(ScValType.SCV_MAP, scVal.value)
+
+    case ScValType.SCV_ADDRESS:
+      return normalizeScAddress(scVal)
 
     // All other variants return unsupported fallback
     default:
