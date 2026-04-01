@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
+import { useNavigate } from '@tanstack/react-router'
 import { validateContractId } from '../../lib/validation/contractId'
+import { normalizeContractIdInput } from '../../lib/validation/normalizeContractIdInput'
 
 function ContractLookUpInput() {
+  const navigate = useNavigate()
   const inputRef = useRef<HTMLInputElement>(null)
   const [inputValue, setInputValue] = useState('')
   const [validationError, setValidationError] = useState<string | null>(null)
@@ -49,9 +52,11 @@ function ContractLookUpInput() {
         return
       }
 
-      // If validation passes, you can proceed with the lookup logic here
-      console.log('Valid contract ID:', inputValue.trim())
-      // TODO: Implement actual contract lookup logic
+      const contractId = normalizeContractIdInput(inputValue)
+      navigate({
+        to: '/contracts/$contractId',
+        params: { contractId },
+      })
     } catch (error) {
       setValidationError('Validation failed. Please try again.')
     } finally {
@@ -76,13 +81,31 @@ function ContractLookUpInput() {
           }`}
           placeholder="Search ledger keys / contract IDs..."
           type="text"
+          onBlur={async () => {
+            const value = inputValue.trim()
+            if (!value) return
+            setValidationError(null)
+            const result = await validateContractId(value)
+            if (!result.ok) {
+              setValidationError(result.error || 'Invalid contract ID')
+            }
+          }}
           disabled={isValidating}
         />
         <div className="absolute inset-y-0 right-0 pr-2 flex items-center gap-2">
           {isValidating && (
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#58a6ff]"></div>
           )}
-          <kbd className="inline-flex items-center border border-border-dark rounded px-2 text-xs font-mono text-text-muted">
+          <button
+            type="submit"
+            disabled={isValidating}
+            className="inline-flex items-center justify-center rounded-md px-2 py-1 text-sm font-medium text-white bg-[#58a6ff] hover:bg-[#79b8ff] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <span className="material-symbols-outlined text-[18px]">
+              arrow_forward
+            </span>
+          </button>
+          <kbd className="hidden md:inline-flex items-center border border-border-dark rounded px-2 text-xs font-mono text-text-muted">
             ⌘K
           </kbd>
         </div>

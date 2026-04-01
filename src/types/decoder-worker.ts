@@ -4,6 +4,7 @@
  */
 
 import type { NormalizedAddress, NormalizedValue } from './normalized'
+import type { Node } from './node'
 import type { ScVal } from '../workers/decoder/normalizeScVal'
 
 /**
@@ -42,6 +43,8 @@ export interface NormalizeRequest {
   scVal: ScVal
   /** Optional flag to normalize as address type if applicable */
   asAddress?: boolean
+  /** Optional maximum recursion depth for normalization. Defaults to a sensible limit. */
+  maxDepth?: number
 }
 
 /**
@@ -71,6 +74,19 @@ export type NormalizeResponse =
  * Result type for normalize method - either success or error.
  */
 export type NormalizeResult = NormalizeResponse | DecoderWorkerError
+
+/**
+ * Request payload for decoding an XDR-encoded ScVal.
+ */
+export interface DecodeScValRequest {
+  /** Base64 encoded ScVal XDR string */
+  xdr: string
+}
+
+/**
+ * Result type for decodeScVal method - either success or error.
+ */
+export type DecodeScValResult = Node | DecoderWorkerError
 
 /**
  * Defines the complete API contract for the decoder worker.
@@ -110,6 +126,14 @@ export interface DecoderWorkerApi {
    * });
    */
   normalize: (request: NormalizeRequest) => Promise<NormalizeResult>
+
+  /**
+   * Decodes an ScVal (Soroban Contract Value) from an XDR string and normalizes it.
+   *
+   * @param request - DecodeScValRequest containing the XDR to decode
+   * @returns Promise resolving to the normalized node contract or error
+   */
+  decodeScVal: (request: DecodeScValRequest) => Promise<DecodeScValResult>
 }
 
 /**
@@ -120,7 +144,7 @@ export interface DecoderWorkerApi {
  * @returns True if result is an error, false otherwise
  */
 export function isDecoderWorkerError(
-  result: NormalizeResult,
+  result: NormalizeResult | DecodeScValResult,
 ): result is DecoderWorkerError {
-  return 'code' in result
+  return 'code' in result && !('kind' in result)
 }

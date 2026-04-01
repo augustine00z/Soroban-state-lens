@@ -7,11 +7,14 @@ import {
   NETWORK_CONFIG_STORAGE_KEY,
   createSafeStorage,
   mergeNetworkConfig,
+  serializeNetworkConfigForStorage,
 } from './persistence'
+import { createContractSlice } from './contractSlice'
 
 import type { PersistedState } from './persistence'
 import type {
   ExpandedNodesSlice,
+  LedgerDataSlice,
   LedgerEntry,
   LedgerKey,
   LensStore,
@@ -221,13 +224,14 @@ export const useLensStore = create<LensStore>()(
       ...createLedgerDataSlice(set),
       ...createExpandedNodesSlice(set),
       ...createSnapshotSlice(set, get),
+      ...createContractSlice(set),
     }),
     {
       name: NETWORK_CONFIG_STORAGE_KEY,
       storage: createSafeStorage<PersistedState>(),
       // Only persist networkConfig slice (excluding connectionStatus)
       partialize: (state): PersistedState => ({
-        networkConfig: state.networkConfig,
+        networkConfig: serializeNetworkConfigForStorage(state.networkConfig),
       }),
       // Validate and merge persisted data safely
       merge: (persistedState, currentState) => ({
@@ -264,6 +268,7 @@ export const resetStore = () => {
     ledgerData: {},
     expandedNodes: [],
     snapshots: {},
+    activeContractId: null,
   })
 }
 
