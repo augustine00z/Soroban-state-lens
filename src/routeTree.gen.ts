@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SdsDemoRouteImport } from './routes/sds-demo'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SettingsPreferencesRouteImport } from './routes/settings/preferences'
 
 const SdsDemoRoute = SdsDemoRouteImport.update({
   id: '/sds-demo',
@@ -22,31 +23,40 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SettingsPreferencesRoute = SettingsPreferencesRouteImport.update({
+  id: '/settings/preferences',
+  path: '/settings/preferences',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/sds-demo': typeof SdsDemoRoute
+  '/settings/preferences': typeof SettingsPreferencesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/sds-demo': typeof SdsDemoRoute
+  '/settings/preferences': typeof SettingsPreferencesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/sds-demo': typeof SdsDemoRoute
+  '/settings/preferences': typeof SettingsPreferencesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/sds-demo'
+  fullPaths: '/' | '/sds-demo' | '/settings/preferences'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/sds-demo'
-  id: '__root__' | '/' | '/sds-demo'
+  to: '/' | '/sds-demo' | '/settings/preferences'
+  id: '__root__' | '/' | '/sds-demo' | '/settings/preferences'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SdsDemoRoute: typeof SdsDemoRoute
+  SettingsPreferencesRoute: typeof SettingsPreferencesRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +75,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/settings/preferences': {
+      id: '/settings/preferences'
+      path: '/settings/preferences'
+      fullPath: '/settings/preferences'
+      preLoaderRoute: typeof SettingsPreferencesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SdsDemoRoute: SdsDemoRoute,
+  SettingsPreferencesRoute: SettingsPreferencesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

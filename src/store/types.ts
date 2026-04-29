@@ -73,9 +73,38 @@ export interface ExpandedNodesSlice {
   collapseAll: () => void
 }
 
+// Byte display modes
+export enum ByteDisplayMode {
+  HEX = 'hex',
+  BASE64 = 'base64',
+  UTF8 = 'utf8',
+}
+
+// BigInt display modes
+export enum BigIntDisplayMode {
+  DECIMAL = 'decimal',
+  HEX = 'hex',
+}
+
+// Preferences configuration
+export interface PreferencesConfig {
+  byteMode: ByteDisplayMode
+  bigintMode: BigIntDisplayMode
+}
+
+// Preferences slice
+export interface PreferencesSlice {
+  preferences: PreferencesConfig
+  setPreferences: (config: Partial<PreferencesConfig>) => void
+  resetPreferences: () => void
+}
+
 // Combined store type
 export interface LensStore
-  extends NetworkConfigSlice, LedgerDataSlice, ExpandedNodesSlice {}
+  extends NetworkConfigSlice,
+    LedgerDataSlice,
+    ExpandedNodesSlice,
+    PreferencesSlice {}
 
 // Default network configurations
 export const DEFAULT_NETWORKS: Record<string, NetworkConfig> = {

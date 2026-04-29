@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useLensStore } from '../../store/lensStore'
 import { NETWORK_CONFIG_STORAGE_KEY, clearPersistedNetworkConfig } from '../../store/persistence'
-import { DEFAULT_NETWORKS } from '../../store/types'
+import { DEFAULT_NETWORKS, ByteDisplayMode, BigIntDisplayMode } from '../../store/types'
 
 // Simple localStorage mock
 const localStorageMock = (function () {
@@ -37,6 +37,10 @@ describe('LensStore Hydration', () => {
       networkConfig: DEFAULT_NETWORKS.futurenet,
       ledgerData: {},
       expandedNodes: [],
+      preferences: {
+        byteMode: ByteDisplayMode.HEX,
+        bigintMode: BigIntDisplayMode.DECIMAL,
+      },
     })
   })
 
@@ -44,7 +48,11 @@ describe('LensStore Hydration', () => {
     // 1. Prepare storage with a valid config (Testnet)
     const persistedState = {
       state: {
-        networkConfig: DEFAULT_NETWORKS.testnet
+        networkConfig: DEFAULT_NETWORKS.testnet,
+        preferences: {
+          byteMode: ByteDisplayMode.HEX,
+          bigintMode: BigIntDisplayMode.DECIMAL,
+        },
       },
       version: 0
     }
@@ -70,7 +78,11 @@ describe('LensStore Hydration', () => {
     
     const persistedState = {
       state: {
-        networkConfig: customConfig
+        networkConfig: customConfig,
+        preferences: {
+          byteMode: ByteDisplayMode.HEX,
+          bigintMode: BigIntDisplayMode.DECIMAL,
+        },
       },
       version: 0
     }
@@ -97,7 +109,11 @@ describe('LensStore Hydration', () => {
         networkConfig: {
           networkId: 'invalid',
           // missing required fields
-        }
+        },
+        preferences: {
+          byteMode: ByteDisplayMode.HEX,
+          bigintMode: BigIntDisplayMode.DECIMAL,
+        },
       },
       version: 0
     }
@@ -115,7 +131,11 @@ describe('LensStore Hydration', () => {
         networkConfig: {
           ...DEFAULT_NETWORKS.testnet,
           someStrangeKey: 'intruder'
-        }
+        },
+        preferences: {
+          byteMode: ByteDisplayMode.HEX,
+          bigintMode: BigIntDisplayMode.DECIMAL,
+        },
       },
       version: 0
     }

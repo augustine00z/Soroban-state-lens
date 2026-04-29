@@ -1,12 +1,18 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-import { ConnectionStatus, DEFAULT_NETWORKS } from './types'
+import {
+  ConnectionStatus,
+  DEFAULT_NETWORKS,
+  ByteDisplayMode,
+  BigIntDisplayMode,
+} from './types'
 import {
   DEFAULT_NETWORK_CONFIG,
   NETWORK_CONFIG_STORAGE_KEY,
   createSafeStorage,
   mergeNetworkConfig,
+  mergePreferences,
 } from './persistence'
 
 import type { PersistedState } from './persistence'
@@ -18,6 +24,8 @@ import type {
   LensStore,
   NetworkConfig,
   NetworkConfigSlice,
+  PreferencesConfig,
+  PreferencesSlice,
 } from './types'
 
 export type { LedgerEntry, LedgerKey } from './types'
@@ -166,25 +174,55 @@ const createExpandedNodesSlice = (
  * - networkConfig: Current network configuration (PERSISTED)
  * - ledgerData: Cached ledger entries (NOT persisted)
  * - expandedNodes: Tree view expansion state (NOT persisted)
+ * - preferences: Display preferences (PERSISTED)
  */
+
+/**
+ * Preferences slice creator
+ */
+const createPreferencesSlice = (
+  set: (fn: (state: LensStore) => Partial<LensStore>) => void,
+): PreferencesSlice => ({
+  preferences: {
+    byteMode: ByteDisplayMode.HEX,
+    bigintMode: BigIntDisplayMode.DECIMAL,
+  },
+
+  setPreferences: (config: Partial<PreferencesConfig>) =>
+    set((state) => ({
+      preferences: { ...state.preferences, ...config },
+    })),
+
+  resetPreferences: () =>
+    set(() => ({
+      preferences: {
+        byteMode: ByteDisplayMode.HEX,
+        bigintMode: BigIntDisplayMode.DECIMAL,
+      },
+    })),
+})
+
 export const useLensStore = create<LensStore>()(
   persist<LensStore, [], [], PersistedState>(
     (set) => ({
       ...createNetworkConfigSlice(set),
       ...createLedgerDataSlice(set),
       ...createExpandedNodesSlice(set),
+      ...createPreferencesSlice(set),
     }),
     {
       name: NETWORK_CONFIG_STORAGE_KEY,
       storage: createSafeStorage<PersistedState>(),
-      // Only persist networkConfig slice (excluding connectionStatus)
+      // Only persist networkConfig and preferences slices
       partialize: (state): PersistedState => ({
         networkConfig: state.networkConfig,
+        preferences: state.preferences,
       }),
       // Validate and merge persisted data safely
       merge: (persistedState, currentState) => ({
         ...currentState,
         ...mergeNetworkConfig(persistedState, currentState),
+        ...mergePreferences(persistedState, currentState),
       }),
     },
   ),
@@ -198,6 +236,7 @@ export const useNetworkConfig = () =>
 export const useLedgerData = () => useLensStore((state) => state.ledgerData)
 export const useExpandedNodes = () =>
   useLensStore((state) => state.expandedNodes)
+export const usePreferences = () => useLensStore((state) => state.preferences)
 
 /**
  * Get store state outside of React components (for testing)
@@ -213,6 +252,10 @@ export const resetStore = () => {
     connectionStatus: ConnectionStatus.IDLE,
     ledgerData: {},
     expandedNodes: [],
+    preferences: {
+      byteMode: ByteDisplayMode.HEX,
+      bigintMode: BigIntDisplayMode.DECIMAL,
+    },
   })
 }
 
@@ -235,4 +278,7 @@ export const lensActions = {
     upserts: Array<LedgerEntry>,
     removals: Array<LedgerKey>,
   ) => useLensStore.getState().batchLedgerUpdate(upserts, removals),
+  setPreferences: (config: Partial<PreferencesConfig>) =>
+    useLensStore.getState().setPreferences(config),
+  resetPreferences: () => useLensStore.getState().resetPreferences(),
 }

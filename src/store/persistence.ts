@@ -1,9 +1,9 @@
 import { createJSONStorage } from 'zustand/middleware'
 
-import { DEFAULT_NETWORKS } from './types'
+import { DEFAULT_NETWORKS, ByteDisplayMode, BigIntDisplayMode } from './types'
 import { validateNetworkConfigPatch } from './validateNetworkConfigPatch'
 
-import type { NetworkConfig } from './types'
+import type { NetworkConfig, PreferencesConfig } from './types'
 import type { PersistStorage } from 'zustand/middleware'
 
 /**
@@ -21,6 +21,7 @@ export const DEFAULT_NETWORK_CONFIG: NetworkConfig = DEFAULT_NETWORKS.futurenet
  */
 export interface PersistedState {
   networkConfig: NetworkConfig
+  preferences: PreferencesConfig
 }
 
 /**
@@ -43,6 +44,24 @@ export function isValidNetworkConfig(value: unknown): value is NetworkConfig {
     networkPassphrase.length > 0 &&
     typeof rpcUrl === 'string' &&
     rpcUrl.length > 0
+  )
+}
+
+/**
+ * Validates that a value is a valid PreferencesConfig object
+ */
+export function isValidPreferencesConfig(
+  value: unknown,
+): value is PreferencesConfig {
+  if (typeof value !== 'object' || value === null) {
+    return false
+  }
+
+  const { byteMode, bigintMode } = value as Record<string, unknown>
+
+  return (
+    (Object.values(ByteDisplayMode) as unknown[]).includes(byteMode) &&
+    (Object.values(BigIntDisplayMode) as unknown[]).includes(bigintMode)
   )
 }
 
@@ -117,6 +136,33 @@ export function mergeNetworkConfig(
   }
 
   // Return current state (with defaults) if persisted data is invalid or missing
+  return currentState
+}
+
+/**
+ * Hydration merge function that validates persisted preferences data
+ */
+export function mergePreferences(
+  persistedState: unknown,
+  currentState: { preferences: PreferencesConfig },
+): { preferences: PreferencesConfig } {
+  if (
+    typeof persistedState === 'object' &&
+    persistedState !== null &&
+    'preferences' in persistedState
+  ) {
+    const persisted = persistedState as { preferences: unknown }
+
+    if (isValidPreferencesConfig(persisted.preferences)) {
+      return { preferences: persisted.preferences }
+    } else {
+      console.warn(
+        '[LensStore] Persisted preferences config is invalid, falling back to default',
+        persisted.preferences,
+      )
+    }
+  }
+
   return currentState
 }
 
